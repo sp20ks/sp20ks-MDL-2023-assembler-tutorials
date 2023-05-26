@@ -17,8 +17,6 @@
     B resd 1
     Q resd 1
     Buffer resd 5
-    b1 resd 1
-    b2 resd 1
  section .text ; сегмент кода
 
  global _start
@@ -101,9 +99,7 @@ _start:
  
     ; меняем местами данные в rcx и rax, чтоб поделить значение из rcx на rax
     xchg rax, rcx
-    
-    mov [b1], rax
-    mov [b2], rcx
+
     ; деление
     idiv ecx
     
