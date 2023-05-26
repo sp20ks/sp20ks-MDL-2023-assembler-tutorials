@@ -101,10 +101,11 @@ _start:
     xchg rax, rcx
 
     ; деление
-    idiv ecx
+    cdq
+    idiv rcx
     
     ; вычитание из первого слагаемого 
-    sbb [Q], rax
+    sub [Q], rax
 
     ; вывод сообщения о результате
     mov rax, 1; системная функция 1 (write)
