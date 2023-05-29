@@ -12,6 +12,9 @@
     
     EndMsg db "Результат:", 10
     lenEndMsg equ $-EndMsg
+    
+    ZeroMsg db "Деление на ноль", 10
+    lenZeroMsg equ $-ZeroMsg
  section .bss ; сегмент неинициализированных переменных
     A resd 1
     B resd 1
@@ -49,7 +52,7 @@ _start:
     ; преобразование str -> int с помощью либы lib64.asm. 
     mov rsi, Buffer
     call StrToInt64
-    mov [A], rax
+    mov [A], eax
        
     ; ввод B
     ; вывод запроса на ввод B
@@ -71,41 +74,44 @@ _start:
     ; преобразование str -> int с помощью либы lib64.asm. 
     mov rsi, Buffer
     call StrToInt64
-    mov [B], rax
+    mov [B], eax
     
     ; вычисление
     
     ;возведение в квадрат a
-    mov rax, [A]
+    mov eax, [A]
     imul DWORD[A] ; результат вычислений помещен в rax
     ; деление a^2 на 2
-    mov DWORD[A], 2
-    idiv DWORD[A] ; rax - целое от деления, rdx - остаток
+    mov ebx, 2
+    cdq ; расширение двойного слова в учетв
+    idiv ebx ; rax - целое от деления, rdx - остаток
     
     ; сохраняем первое слагаемое в q
-    mov [Q], rax
+    mov [Q], eax
     
     ; возведем в куб b
-    mov rax, [B]
+    mov eax, [B]
     imul DWORD[B]
     imul DWORD[B]
     ; сохраним b^3 в регистре rcx, пока будем вычислять знаменатель
-    mov rcx, rax   
+    mov ecx, eax   
     
     ; вычисляем 4 - a + b
-    mov rax, 4
-    sbb rax, [A] ; вычитает из операнда1 операнд2 и помещает результат по адресу операнда1
-    add rax, [B] ; аналогично sbb, но сложение
+    mov eax, 4
+    sbb eax, [A] ; вычитает из операнда1 операнд2 и помещает результат по адресу операнда1
+    add eax, [B] ; аналогично sbb, но сложение
  
     ; меняем местами данные в rcx и rax, чтоб поделить значение из rcx на rax
-    xchg rax, rcx
+    xchg eax, ecx
 
     ; деление
     cdq
-    idiv rcx
+    cmp ecx, 0
+    je ZERO ; проверка на деление на ноль
+    idiv ecx
     
     ; вычитание из первого слагаемого 
-    sub [Q], rax
+    sbb [Q], eax
 
     ; вывод сообщения о результате
     mov rax, 1; системная функция 1 (write)
@@ -128,6 +134,17 @@ _start:
     ; вызов системной функции
     syscall
     
+exit:
     mov rax, 60; системная функция 60 (exit)
     xor rdi, rdi; return code 0
     syscall
+    
+ZERO:
+    ; вывод сообщения о делении на ноль
+    mov rax, 1; системная функция 1 (write)
+    mov rdi, 1; дескриптор файла stdout=1
+    mov rsi, ZeroMsg ; адрес выводимой строки
+    mov rdx, lenZeroMsg ; длина строки
+    ; вызов системной функции
+    syscall
+    jmp exit
