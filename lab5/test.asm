@@ -1,4 +1,6 @@
 global Convert
+
+extern _Z12print_resultv
 section .text ; сегмент кода
 
 Convert:
@@ -48,5 +50,7 @@ clear:
     jmp clear
 
 Exit:
+    call _Z12print_resultv
+    mov rsp, rbp
     pop RBP
     ret

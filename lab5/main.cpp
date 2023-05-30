@@ -5,6 +5,11 @@ using namespace std;
 
 extern "C" void Convert(char*);
 
+void print_result() {
+    cout << "Result: " << endl;
+};
+
+
 int main () {
     string str;
     cout << "Введите строку: ";
